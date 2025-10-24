@@ -476,20 +476,26 @@ function updateDrone(dt) {
     const sX = Math.floor(drone.x * screenScale);
     const sY = Math.floor(SCREEN_HEIGHT - drone.y * screenScale);
     // read pixel color at canvas pixel coords
-    let lowPixel = getPixelColourAtCanvas(canvas, sX, sY+8); //screen.get_at((sX,sY+8))
+    let lowPixel = getPixelColourAtCanvas(canvas, sX, sY+6); //screen.get_at((sX,sY+8))
     let leftPixel = getPixelColourAtCanvas(canvas,sX-20,sY); //screen.get_at((sX-20,sY))
+    let leftPixel2 = getPixelColourAtCanvas(canvas,sX-20,sY+4);
     let rightPixel = getPixelColourAtCanvas(canvas,sX+20,sY); //screen.get_at((sX+20,sY))
+    let rightPixel2 = getPixelColourAtCanvas(canvas,sX+20,sY+4);
+    ctx.fillStyle = '#f0f';
+    ctx.fillRect(sX,sY+6,1,1);
+    ctx.fillRect(sX-20,sY,1,1);
+    ctx.fillRect(sX+20,sY,1,1);
     if (colourMatch(lowPixel,GREEN) || colourMatch(lowPixel,RED)) { // crash down
         drone.theta = 0;
         drone.vX = 0.4 * drone.vX;
         drone.vY = -0.4 * drone.vY;
-        drone.y += drone.vY*2.5/30; //WAS pY=  stop it going through the ground
+        drone.y += drone.vY*2.5/30; //2.5/30 WAS pY=  stop it going through the ground
     }
-    if (colourMatch(leftPixel,RED)) { //crash left (this is useful, the constant vX PID makes it spin out of control!)
-        drone.vX = -1.2 * Math.abs(drone.vX); //was 0.4
+    if (colourMatch(leftPixel,RED)||colourMatch(leftPixel2,RED)) { //crash left (this is useful, the constant vX PID makes it spin out of control!)
+        drone.vX = -0.4 * drone.vX; //was 0.4
     }
-    if (colourMatch(rightPixel,RED)) { //crash right
-        drone.vX = -1.2 * Math.abs(drone.vX);
+    if (colourMatch(rightPixel,RED)||colourMatch(rightPixel2,RED)) { //crash right
+        drone.vX = -0.4 * drone.vX;
     }
 }
 
@@ -593,14 +599,16 @@ function clearCanvas() {
 // --- Course and game state ---
 const course = new CourseSequencer();
 // Add waypoints (from droneracer.py)
-course.addWaypoint(331,166,20,-30,0);
-course.addWaypoint(60,190,40,0,0);
-course.addWaypoint(330,298,20,0,0);
-course.addWaypoint(459,465,20,-30,0);
-course.addWaypoint(238,465,20,-30,0);
-course.addWaypoint(336,375,30,28,140);
-course.addWaypoint(478,244,20,0,0);
-course.addWaypoint(586,175,40,0,0); // start finish
+// NOTE: different coords to python as these draw from centre NOT top left as in pygame sprites
+// ALL are shifted left and up
+course.addWaypoint(320/*331*/,158/*166*/,20,-30,0); //tunnel
+course.addWaypoint(40/*60*/,170/*190*/,40,0,0); //top left flag
+course.addWaypoint(320/*330*/,286/*298*/,20,0,0); //crossover top centre
+course.addWaypoint(448/*459*/,455/*465*/,20,-30,0); //bottom right gate
+course.addWaypoint(228/*238*/,455/*465*/,20,-30,0); //bottom left gate
+course.addWaypoint(320/*336*/,365/*375*/,30,28,140); //crossover bottom
+course.addWaypoint(468/*478*/,234/*244*/,20,0,0); //mid right gate under start finish
+course.addWaypoint(565 /*586*/, 165 /*175*/,40,0,0); // start finish
 drone.x = 5.65; // puts you on the grass under the start finish grid ready to go
 drone.y = 2.38;
 course.next = 7; // sets the waypoint to the start finish straight where timing starts
